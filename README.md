@@ -16,7 +16,7 @@ Setiap berkas `.md` di sini saling berkaitan dan ditulis berdasarkan praktik lan
 
 * **Laptop:** Asus Notebook x451c 2014
 * **Sistem Operasi:** Arch-Linux
-* **Text Editor:** Emacs
+* **Text Editor:** GNU/Emacs
 
 ---
 
