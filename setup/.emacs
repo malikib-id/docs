@@ -90,26 +90,37 @@
 	       flycheck flymd grip-mode impatient-mode magit markdown-mode
 	       prettier-js vterm web-mode yaml-mode)))
 
-;; Disable backup files
-(setq make-backup-files nil) ; Tidak buat backup file
-(setq auto-save-default nil) ; Tidak buat auto-save file (#file#)
+;; ;; Disable backup files
+;; (setq make-backup-files nil) ; Tidak buat backup file
+;; (setq auto-save-default nil) ; Tidak buat auto-save file (#file#)
 
 (global-company-mode 1)
 
 ;; ========== BACKUP ==========
-;; 1. Buat folder khusus untuk menampung semua file cadangan
-(setq backup-directory-alist `(("." . "~/.emacs.d/backups/")))
-(setq auto-save-file-name-transforms `((".*" "~/.emacs.d/auto-save/" t)))
 
-;; 2. Aktifkan kembali fiturnya (Ganti 'nil' jadi 't' atau hapus baris lama)
+;; 1. Definisikan jalur folder cadangan
+(defvar my-backup-dir "~/.emacs.d/backups/")
+(defvar my-auto-save-dir "~/.emacs.d/auto-save/")
+
+;; 🔄 OTOMATISASI: Buat folder langsung jika belum ada di komputer
+(unless (file-exists-p my-backup-dir)
+  (make-directory my-backup-dir t))
+(unless (file-exists-p my-auto-save-dir)
+  (make-directory my-auto-save-dir t))
+
+;; 2. Daftarkan folder ke sistem Emacs
+(setq backup-directory-alist `(("." . ,my-backup-dir)))
+(setq auto-save-file-name-transforms `((".*" ,my-auto-save-dir t)))
+
+;; 3. Aktifkan fitur backup & auto-save
 (setq make-backup-files t)    ; Aktifkan backup otomatis
 (setq auto-save-default t)    ; Aktifkan auto-save otomatis
 
-;; 3. Atur sistem backup agar lebih pintar dan efisien
-(setq version-control t)      ; Pakai sistem nomor versi (file.txt.~1~, file.txt.~2~)
-(setq kept-old-versions 2)    ; Simpan 2 versi cadangan paling awal (paling lama)
-(setq kept-new-versions 6)    ; Simpan 6 versi cadangan terbaru (paling baru)
-(setq delete-old-versions t)  ; Otomatis hapus versi tengah-tengah yang tidak penting
+;; 4. Atur sistem nomor versi agar lebih pintar
+(setq version-control t)      ; Pakai sistem nomor versi (file.txt.~1~)
+(setq kept-old-versions 2)    ; Simpan 2 versi cadangan paling awal
+(setq kept-new-versions 6)    ; Simpan 6 versi cadangan terbaru
+(setq delete-old-versions t)  ; Otomatis hapus versi tengah yang tidak penting
 
 ;; ========== SHORTCUT ==========
 
@@ -372,13 +383,12 @@
         :host "openrouter.ai"
         :endpoint "/api/v1/chat/completions"
         :stream t
-        :key "";can be a function that returns the key
+        :key ''
         :models '(google/gemini-2.5-flash        
-		  meta-llama/llama-3.3-70b-instruct))
-      (global-set-key (kbd "<f7>") 'gptel-menu)
-      (global-set-key (kbd "<f8>") 'gptel-rewrite)  
-      (global-set-key (kbd "<f9>") 'gptel))
-
+		  meta-llama/llama-3.3-70b-instruct)))
+(global-set-key (kbd "<f7>") 'gptel-menu)
+(global-set-key (kbd "<f8>") 'gptel-rewrite)  
+(global-set-key (kbd "<f9>") 'gptel)
 
 ;; ======================================================
 ;; OTHER
