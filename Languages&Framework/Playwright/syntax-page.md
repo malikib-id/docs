@@ -6,7 +6,7 @@ catatan berisi syntax syntax playwright funtion Page
 
 ## Navigasi
 
-![teksnavigasi](/home/malikib/Documents/Docs/Languages&Framework/Playwright/images/2026-08-19-13:54:58_screenshot.png)
+![gambar-about-blank](./images/about-blank.png)
 
 saat awal Playwright di buka, dia berada di about:blank(seperti gambar di atas), kita harus mengarahkan nya ke link website yang ingin kita test, sesimple 
 
@@ -18,13 +18,13 @@ sesuaikan link nya masing-masing.
 
  jika website nya masih berada di local atau jalan di komputer sendiri seperti ini:
 
-![teksnavigasi](/home/malikib/Documents/Docs/Languages&Framework/Playwright/images/2026-08-19-14:03:46_screenshot.png)
+![gambar-python-server](./images/pyserver.png)
 
 maka tinggal masukan saja link local nya`page.goto('http://0.0.0.0:8000/')`
 
 maka jadi nya akan seperti ini:
 
-![teksnavigasi](/home/malikib/Documents/Docs/Languages&Framework/Playwright/images/2026-08-19-14:04:05_screenshot.png)
+![gambar-localhost](./images/localhost.png)
 
 simple kan? masih ada lagi syntax navigasi lainnya yang bisa di pakai:
 
@@ -158,9 +158,7 @@ contoh html seperti ini:
 ```
 
 walau tanpa html pun, kita bisa ambil text langsung dari yang kita lihat
-
-![teksnavigasi](/home/malikib/Documents/Docs/Languages&Framework/Playwright/images/2026-08-22-19:04:19_screenshot.png)
-
+![gambar-login-success](./images/getbyText.png)
 kita bisa pakai:
 
 ```typescript
@@ -229,5 +227,3 @@ selanjutnya kita akan belajar assertion atau validasi agar test tersebut bisa di
 - Assertion
 
 - [Daftar isi](Daftar-isi.md)
-
-
