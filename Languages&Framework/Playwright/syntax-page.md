@@ -158,7 +158,9 @@ contoh html seperti ini:
 ```
 
 walau tanpa html pun, kita bisa ambil text langsung dari yang kita lihat
+
 ![gambar-login-success](./images/getbyText.png)
+
 kita bisa pakai:
 
 ```typescript
