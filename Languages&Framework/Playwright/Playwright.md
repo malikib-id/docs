@@ -1,4 +1,4 @@
-# Playwright
+# Playwright 🎭
 
 ini adalah catatan tentang Playwright, murni hanya rangkuman dari pemahaman penulis: [Malikib](https://malikib.my.id/portofolio)
 
@@ -54,7 +54,7 @@ walau Playwright adalah alat yang bagus dan canggih, tentu kita harus objektif t
 
 ## Harus bisa bahasa Pemograman?
 
-hmmm... sayangnya iya, walau ada fitur Codegen yang bisa bikin kode secara otomatis hanya dengan klik klik browser mengikuti alur, kita tetap harus memahami **dasar-dasar** bahasa pemograman. ini bisa jadi kekurangan bagi mereka yang merasa gak punya waktu untuk belajar bahasa pemograman
+hmmm🤔... sayangnya iya, walau ada fitur Codegen yang bisa bikin kode secara otomatis hanya dengan klik klik browser mengikuti alur, kita tetap harus memahami **dasar-dasar** bahasa pemograman. ini bisa jadi kekurangan bagi mereka yang merasa gak punya waktu untuk belajar bahasa pemograman
 
 bebas mau pakai bahasa pemograman apa, seperti:
 
