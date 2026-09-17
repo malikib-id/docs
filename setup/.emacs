@@ -49,7 +49,6 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(show-paren-match ((t (:background "blue" :foreground "white" :bold t))))
- ;; Warna merah untuk bracket tidak match
  '(show-paren-mismatch ((t (:background "red" :foreground "white" :bold t)))))
 
 ;; Always show matching paren
@@ -88,7 +87,7 @@
  '(package-selected-packages
    '(aidermacs cmake-ide cmake-mode cmake-project company corfu csv-mode emmet-mode
 	       flycheck flymd grip-mode impatient-mode magit markdown-mode
-	       prettier-js vterm web-mode yaml-mode)))
+	       markdown-preview-mode prettier-js vterm web-mode yaml-mode)))
 
 ;; ;; Disable backup files
 ;; (setq make-backup-files nil) ; Tidak buat backup file
@@ -190,7 +189,7 @@
 ;; Mengaktifkan navigasi pindah layar dengan Shift + Panah
 (windmove-default-keybindings)
 
-
+ 
 
 ;; ========== ELDOC ==========
 ;; Saat kamu mengetik fungsi/class, parameternya muncul di echo area (bawah), bukan pop-up
@@ -212,50 +211,87 @@
   :config
   (setq company-idle-delay nil           ; NIL = Matikan total pop-up otomatis saat mengetik
         company-minimum-prefix-length 99 ; Mencegah pemicu otomatis lainnya
+        company-tooltip-limit 10))
+
+
+;; ======================================================
+;; EGLOT
+;; ======================================================
+
+;; 1. OPTIMASI PERFORMA CORE
+(setq gc-cons-threshold 100000000)
+(add-hook 'after-init-hook (lambda () (setq gc-cons-threshold 20000000)))
+(setq read-process-output-max (* 1024 1024))
+(add-to-list 'exec-path "/home/malikib/.npm-global/bin")
+
+;; 2. KONFIGURASI PAKET (ELDOC, FLYMAKE, COMPANY, YAML)
+;; Eldoc
+(setq eldoc-idle-delay 0.5)
+
+;; Flymake
+(setq flymake-fringe-indicator-position 'left-fringe)
+
+;; Company Mode
+(require 'company nil t)
+(when (fboundp 'global-company-mode)
+  (global-company-mode)
+  (setq company-idle-delay nil
+        company-minimum-prefix-length 99
         company-tooltip-limit 10)
-  
-  ;; TOMBOL PINTAS MANUAL: Tekan M-/ (Alt + /) untuk memunculkan autocomplete jika butuh
   (global-set-key (kbd "M-/") 'company-complete))
-(use-package eglot
-  :ensure t
-  :hook
-  ((python-mode-hook . eglot-ensure)
-   (c-mode-hook . eglot-ensure)
-   (go-mode-hook . eglot-ensure)
-   (yaml-mode-hook . eglot-ensure))
-  :config
-  ;; SILENCER TOTAL: Matikan pycodestyle & linter kosmetik yang berisik
-  (setq-default eglot-workspace-configuration
-                '((:pylsp :plugins (;; Matikan pycodestyle (spasi/formatting PEP8)
-                                    :pycodestyle (:enabled :json-false)
-                                    ;; Matikan flake8
-                                    :flake8 (:enabled :json-false)
-                                    ;; Matikan mccabe (warning kompleksitas kode)
-                                    :mccabe (:enabled :json-false)
-                                    ;; Sisakan pylint/rope hanya untuk fungsi vital (autocompletion)
-                                    :preload (:enabled t))))))
 
+;; Yaml
+(require 'yaml-mode nil t)
 
-;;EGLOT
+;; 3. EGLOT (LSP CLIENT) & SERVER PROGRAMS
+(require 'eglot nil t)
 (with-eval-after-load 'eglot
-  ;; Anda bisa menambahkan kustomisasi Eglot di sini jika diperlukan
-  )
+  ;; Silencer Python
+  (setq-default eglot-workspace-configuration
+                '((:pylsp :plugins (:pycodestyle (:enabled :json-false)
+                                    :flake8 (:enabled :json-false)
+                                    :mccabe (:enabled :json-false)
+                                    :preload (:enabled t)))))
+  
+  ;; Registrasi Server TS & Clangd secara aman
+  (add-to-list 'eglot-server-programs
+               (cons '(typescript-mode typescript-ts-mode)
+                     (list "/home/malikib/.npm-global/bin/typescript-language-server" "--stdio")))
+  
+  (add-to-list 'eglot-server-programs
+               (cons '(c-mode c++-mode c-ts-mode c++-ts-mode)
+                     (list "clangd" "--background-index" "--clang-tidy" "--header-insertion=iwyu"))))
 
-(setq eldoc-idle-delay 1) ; Default biasanya 0.1, bikin terasa "agresif"
+;; Shortcut Reconnect F12
+(add-hook 'eglot-managed-mode-hook
+          (lambda () (local-set-key (kbd "<f12>") 'eglot-reconnect)))
 
-;; Pastikan yaml-mode terinstal untuk mendeteksi file .yml
-(use-package yaml-mode
-  :ensure t)
+;; 4. PROJECT MANAGEMENT
+(with-eval-after-load 'project
+  (add-to-list 'project-vc-extra-root-markers "tsconfig.json")
+  (setq project-vc-ignores '("node_modules/" ".main/")))
 
-;; Hubungkan yaml-mode dengan eglot
+;; 5. KAITAN HOOKS (BAHASA PEMROGRAMAN)
+;; Python
+(add-hook 'python-mode-hook 'eglot-ensure)
+(add-hook 'python-mode-hook 'flymake-mode)
+(add-hook 'python-mode-hook
+          (lambda ()
+            (setq python-indent-offset 4)
+            (local-set-key (kbd "RET") 'newline-and-indent)))
+
+;; C, C++, Go, YAML
+(add-hook 'c-mode-hook 'eglot-ensure)
+(add-hook 'c++-mode-hook 'eglot-ensure)
+(add-hook 'go-mode-hook 'eglot-ensure)
 (add-hook 'yaml-mode-hook 'eglot-ensure)
 
-
-;;; flymake mode
-(add-hook 'python-mode-hook 'flymake-mode)
-(global-set-key (kbd "<f12>") 'flymake-show-buffer-diagnostics)
-
-
+;; TypeScript & Tree-sitter
+(add-to-list 'auto-mode-alist '("\\.ts\\'" . typescript-ts-mode))
+(add-to-list 'auto-mode-alist '("\\.tsx\\'" . tsx-ts-mode))
+(add-hook 'typescript-mode-hook 'eglot-ensure)
+(add-hook 'typescript-ts-mode-hook 'eglot-ensure)
+(add-hook 'typescript-ts-mode-hook 'flymake-mode)
 
 ;; ========== VTERM ==========
 (use-package vterm
@@ -267,21 +303,6 @@
   ;; Pintasan copas yang sebelumnya
   (define-key vterm-mode-map (kbd "C-v") 'vterm-yank)
   (define-key vterm-mode-map (kbd "M-w") 'vterm-copy-mode))
-
-
-;; ======================================================
-;; PYTHON
-;; ======================================================
-
-(add-hook 'python-mode-hook 'eglot-ensure) ;; aktifkan eglot
-;; Auto indent Python
-(add-hook 'python-mode-hook
-  (lambda ()
-    (setq python-indent-offset 4)
-    (local-set-key (kbd "RET") 'newline-and-indent)))
-
-
-
 
 ;; ===================================================
 ;; CSS & HTML
@@ -316,76 +337,48 @@
 ;; Contoh keybinding: Ctrl+j
 (define-key emmet-mode-keymap (kbd "C-j") 'emmet-expand-line)
 
-
-;; ===================================================
-;; TYPESCRIPT
-;; ===================================================
-
-;; Otomatis deteksi file .ts dan .tsx untuk menyalakan warna Tree-sitter
-(add-to-list 'auto-mode-alist '("\\.ts\\'" . typescript-ts-mode))
-(add-to-list 'auto-mode-alist '("\\.tsx\\'" . tsx-ts-mode))
-
-(with-eval-after-load 'eglot
-  (add-to-list 'eglot-server-programs
-               `((typescript-mode typescript-ts-mode) . ("/home/malikib/.npm-global/bin/typescript-language-server" "--stdio"))))
-
-;; Otomatis nyalakan Eglot setiap kali membuka file TypeScript
-(add-hook 'typescript-mode-hook #'eglot-ensure)
-(add-hook 'typescript-ts-mode-hook #'eglot-ensure)
-
-;; Paksa Emacs mengenali tsconfig.json sebagai batas root projek utama
-(with-eval-after-load 'project
-  (add-to-list 'project-vc-extra-root-markers "tsconfig.json"))
-
-;; Larang Emacs dan Eglot mengintip folder node_modules agar tidak freeze
-(with-eval-after-load 'project
-  (setq project-vc-ignores '("node_modules/" ".main/")))
-
-;; Naikkan memori GC menjadi 100MB saat startup agar Emacs super cepat
-(setq gc-cons-threshold 100000000)
-
-;; Kembalikan ke angka aman (20MB) setelah Emacs selesai loading sepenuhnya
-(add-hook 'after-init-hook
-          (lambda () (setq gc-cons-threshold 20000000)))
-
-;; Naikkan kapasitas baca data proses dari server LSP (1MB)
-(setq read-process-output-max (* 1024 1024))
-
-
 ;; ======================================================
 ;; AI
 ;; ======================================================
 
 ;; AI Agent
 ;; 1. Set API Key OpenRouter agar terbaca oleh sistem
-;; (setenv "OPENROUTER_API_KEY" "")
-;; ;; 2. Konfigurasi Paket Aidermacs
-;; (use-package aidermacs
-;;   :ensure t
-;;   :defer t
-;;   :config
-;;   (setq aidermacs-backend 'comint) 
-;;   (setq aidermacs-args '(
-;; 			 "--model" "openrouter/openrouter/free"
-;; 			 "--chat-language" "Indonesian"
-;;                          "--api-key" "openrouter="
-;;                          "--no-auto-commits"
-;;                          )))
+(setenv "OPENROUTER_API_KEY" "")
+;; 2. Konfigurasi Paket Aidermacs 
+(use-package aidermacs
+  :ensure t
+  :config
+  ;; Gunakan backend comint (standar buffer Emacs)
+  (setq aidermacs-backend 'comint) 
 
-;; ;; 3. Shortcut aman menggunakan tombol F9
-;; ;; (global-set-key (kbd "<f9>") 'aidermacs-transient-menu)
+  ;; MASUKKAN API KEY OPENROUTER ANDA DI SINI
+  (setenv "OPENROUTER_API_KEY" "")
+
+  :custom
+  ;; Menentukan model NVIDIA Nemotron Free via OpenRouter
+  (aidermacs-default-model "openrouter/nvidia/nemotron-3.5-lightning:free")
+  
+  ;; Mode interaksi default (architect adalah mode standar koding yang direkomendasikan)
+  (aidermacs-default-chat-mode 'architect)
+  
+  ;; Argumen tambahan dasar (Bahasa Indonesia & matikan auto-commit)
+  (aidermacs-extra-args '("--chat-language" "Indonesian" "--no-auto-commits")))
+
+;; 3. Shortcut aman menggunakan tombol F12
+(global-set-key (kbd "<f12>") 'aidermacs-transient-menu)
 
 ;; LLMs 
-(setq gptel-model  'google/gemini-2.5-flash
+(setq gptel-model  'nvidia/nemotron-3-super-120b-a12b:free
       gptel-max-tokens 4000
       gptel-backend
       (gptel-make-openai "OpenRouter" 
         :host "openrouter.ai"
         :endpoint "/api/v1/chat/completions"
         :stream t
-        :key ''
-        :models '(google/gemini-2.5-flash        
-		  meta-llama/llama-3.3-70b-instruct)))
+        :key "";can be a function that returns the key
+        :models '(nvidia/nemotron-3-super-120b-a12b:free
+		  cohere/north-mini-code:free
+		  poolside/laguna-xs-2.1:free)))
 (global-set-key (kbd "<f7>") 'gptel-menu)
 (global-set-key (kbd "<f8>") 'gptel-rewrite)  
 (global-set-key (kbd "<f9>") 'gptel)
@@ -415,6 +408,3 @@
 (add-to-list 'auto-mode-alist '("\\.md\\'" . markdown-mode))
 (add-to-list 'auto-mode-alist '("\\.markdown\\'" . markdown-mode))
 
-;; Contoh: Otomatis aktif saat membuka file Python, C/C++, atau Go
-(add-hook 'c-mode-hook 'eglot-ensure)
-(add-hook 'go-mode-hook 'eglot-ensure)  
