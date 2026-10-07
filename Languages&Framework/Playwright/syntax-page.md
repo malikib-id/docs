@@ -4,6 +4,13 @@
 
 catatan berisi syntax syntax playwright funtion Page
 
+jikalau ingin menggunakan syntax page, jangan lupa untuk menulis page di sini
+
+```typescript
+test('skenario', async({ page }) => {})
+                         ^^^
+```
+
 ## Navigasi
 
 ![gambar-about-blank](./images/about-blank.png)
@@ -226,6 +233,6 @@ kita berhasil menyuruh PLaywright melakukan aksi yang kita inginkan, misal seper
 
 selanjutnya kita akan belajar assertion atau validasi agar test tersebut bisa di katakan gagal atau berhasil. 
 
-- Assertion
+- [Assertion](./syntax-expect.md)
 
 - [Daftar isi](Daftar-isi.md)

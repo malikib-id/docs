@@ -12,6 +12,6 @@ Topik-topik yang akan di di bahas:
 
 - [Syntax Page](syntax-page.md)
 
-- Assertion
+- [Assertion](syntax-expect.md)
 
 
